@@ -8,4 +8,6 @@ app.wsgi_app = WhiteNoise(app.wsgi_app,
                           index_file='index.htm', 
                           autorefresh=True)
 @app.route('/', methods=['GET'])
+if __name__ == "__main__":
+    app.run(threaded=True, port=5000)
 
