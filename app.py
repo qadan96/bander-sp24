@@ -7,5 +7,5 @@ app.wsgi_app = WhiteNoise(app.wsgi_app,
                           prefix='static/', 
                           index_file='index.htm', 
                           autorefresh=True)
-
+@app.route('/', methods=['GET'])
 
