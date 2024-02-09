@@ -1,102 +1,61 @@
-<!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
+    <meta charset = "UTF-8">
     <title>Tree Distribution in SF</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://d3js.org/topojson.v3.min.js"></script>
     <style>
         .neighborhood {stroke: #000; stroke-width: 1; fill: none;}
-        .tree-dot {fill: forestgreen; opacity: 0.8;}
-        .arc path {fill: #d3d3d3; stroke: #fff;}
+        .tree-dot {fill: forestgreen; opacity: 0.7;}
         body {background-color: #ADD8E6;}
-        text.title {
-            font: 16px sans-serif;
-            text-anchor: middle;
-        }
     </style>
 </head>
 <body>
-<svg id="sfmap" width="960" height="600"></svg>
-<!-- Adjust the height of the SVG to accommodate the title -->
-<svg id="speciesChart" width="480" height="340" style="display: block;"></svg>
+<svg id = "sfmap" width = "960" height = "600"></svg>
 
-<script>
-    const svgMap = d3.select("#sfmap");
-    const widthMap = +svgMap.attr("width");
-    const heightMap = +svgMap.attr("height");
-    const marginMap = {top: 20, right: 20, bottom: 20, left: 20};
-    const mapWidth = widthMap - marginMap.left - marginMap.right;
-    const mapHeight = heightMap - marginMap.top - marginMap.bottom;
-    const map = svgMap.append("g").attr("transform", `translate(${marginMap.left}, ${marginMap.top})`);
+<script id = "dottree-map">
+    const svg = d3.select("#sfmap");
+    const width = svg.attr("width");
+    const height = svg.attr("height");
+    const margin = {top: 20, right: 20, bottom: 20, left:20};
+    const mapWidth = width - margin.left - margin.right;
+    const mapHeight = height - margin.top - margin.bottom;
+    const map = svg.append("g")
+                    .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    const svgChart = d3.select("#speciesChart");
-    const widthChart = +svgChart.attr("width");
-    const heightChart = +svgChart.attr("height") - 40; // Adjust for title space
-    const radius = Math.min(widthChart, heightChart) / 2;
-    const chartG = svgChart.append("g").attr("transform", `translate(${widthChart / 2}, ${heightChart / 2 + 40})`); // Adjust for title
-
-    const color = d3.scaleOrdinal(d3.schemeCategory10);
-    const pie = d3.pie().sort(null).value(d => d.count);
-    const arc = d3.arc().outerRadius(radius - 10).innerRadius(0);
-
-    // Add title
-    svgChart.append("text")
-        .attr("class", "title")
-        .attr("y", 20) // Position the title at the top of the SVG
-        .attr("x", widthChart / 2)
-        .text("San Francisco's Top 3 Tree Species");
-
-    const requestData = async function() {
+    const requestData = async function(){
         const sf = await d3.json("./static/SF-Neighborhoods.json");
-        const treeData = await d3.csv("./static/Street_Tree_List_smaller.csv");
 
-        // Map visualization
         var neighborhoods = topojson.feature(sf, sf.objects.SFNeighborhoods);
         var projection = d3.geoMercator().fitSize([mapWidth, mapHeight], neighborhoods);
+        var path = d3.geoPath().projection(projection);
+
         map.selectAll("path.neighborhood")
             .data(neighborhoods.features)
             .join("path")
             .attr("class", "neighborhood")
-            .attr("d", d3.geoPath().projection(projection));
+            .attr("d", path);
 
-        treeData.forEach(d => {
+        const treeID = await d3.csv("./static/Street_Tree_List_smaller.csv");
+            console.log(treeID);
+
+        treeID.forEach(d => {
             d.Position = projection([d.Longitude, d.Latitude]);
         });
 
         map.selectAll("circle.tree-dot")
-            .data(treeData)
+            .data(treeID)
             .join("circle")
             .attr("class", "tree-dot")
             .attr("r", 1)
             .attr("cx", d => d.Position[0])
             .attr("cy", d => d.Position[1]);
-
-        // Pie chart visualization
-        let speciesCount = d3.rollup(treeData, v => v.length, d => d.qSpecies);
-        let dataArray = Array.from(speciesCount, ([species, count]) => ({species, count: count}))
-                             .sort((a, b) => b.count - a.count) // Sort by count in descending order
-                             .slice(0, 3); // Select only the top 3 species
-
-        const pieData = pie(dataArray);
-
-        chartG.selectAll(".arc")
-            .data(pieData)
-            .enter().append("g")
-            .attr("class", "arc")
-            .append("path")
-            .attr("d", arc)
-            .attr("fill", d => color(d.data.species));
-
-        chartG.selectAll(".arc")
-            .data(pieData)
-            .append("text")
-            .attr("transform", d => `translate(${arc.centroid(d)})`)
-            .attr("dy", "0.35em")
-            .text(d => d.data.species);
+    
     };
 
     requestData();
+    console.log("dottree-map");
+
 </script>
 </body>
 </html>
