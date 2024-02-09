@@ -1,61 +1,88 @@
+<!DOCTYPE html>
 <html>
 <head>
-    <meta charset = "UTF-8">
-    <title>Tree Distribution in SF</title>
+    <meta charset="UTF-8">
+    <title>Tree Distribution and Species in SF</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://d3js.org/topojson.v3.min.js"></script>
     <style>
         .neighborhood {stroke: #000; stroke-width: 1; fill: none;}
         .tree-dot {fill: forestgreen; opacity: 0.8;}
+        .arc path {fill: #d3d3d3; stroke: #fff;}
         body {background-color: #ADD8E6;}
     </style>
 </head>
 <body>
-<svg id = "sfmap" width = "960" height = "600"></svg>
+<svg id="sfmap" width="960" height="600"></svg>
+<svg id="speciesChart" width="480" height="300" style="display: block;"></svg>
 
-<script id = "dottree-map">
-    const svg = d3.select("#sfmap");
-    const width = svg.attr("width");
-    const height = svg.attr("height");
-    const margin = {top: 20, right: 20, bottom: 20, left:20};
-    const mapWidth = width - margin.left - margin.right;
-    const mapHeight = height - margin.top - margin.bottom;
-    const map = svg.append("g")
-                    .attr("transform", `translate(${margin.left},${margin.top})`);
+<script>
+    const svgMap = d3.select("#sfmap");
+    const widthMap = +svgMap.attr("width");
+    const heightMap = +svgMap.attr("height");
+    const marginMap = {top: 20, right: 20, bottom: 20, left: 20};
+    const mapWidth = widthMap - marginMap.left - marginMap.right;
+    const mapHeight = heightMap - marginMap.top - marginMap.bottom;
+    const map = svgMap.append("g").attr("transform", `translate(${marginMap.left}, ${marginMap.top})`);
 
-    const requestData = async function(){
+    const svgChart = d3.select("#speciesChart");
+    const widthChart = +svgChart.attr("width");
+    const heightChart = +svgChart.attr("height");
+    const radius = Math.min(widthChart, heightChart) / 2;
+    const g = svgChart.append("g").attr("transform", `translate(${widthChart / 2}, ${heightChart / 2})`);
+
+    const color = d3.scaleOrdinal(d3.schemeCategory10);
+    const pie = d3.pie().sort(null).value(d => d.count);
+    const arc = d3.arc().outerRadius(radius - 10).innerRadius(0);
+
+    const requestData = async function() {
         const sf = await d3.json("./static/SF-Neighborhoods.json");
+        const treeData = await d3.csv("./static/Street_Tree_List_smaller.csv");
 
+        // Map visualization
         var neighborhoods = topojson.feature(sf, sf.objects.SFNeighborhoods);
         var projection = d3.geoMercator().fitSize([mapWidth, mapHeight], neighborhoods);
-        var path = d3.geoPath().projection(projection);
-
         map.selectAll("path.neighborhood")
             .data(neighborhoods.features)
             .join("path")
             .attr("class", "neighborhood")
-            .attr("d", path);
+            .attr("d", d3.geoPath().projection(projection));
 
-        const treeID = await d3.csv("./static/Street_Tree_List_smaller.csv");
-            console.log(treeID);
-
-        treeID.forEach(d => {
+        treeData.forEach(d => {
             d.Position = projection([d.Longitude, d.Latitude]);
         });
 
         map.selectAll("circle.tree-dot")
-            .data(treeID)
+            .data(treeData)
             .join("circle")
             .attr("class", "tree-dot")
             .attr("r", 1)
             .attr("cx", d => d.Position[0])
             .attr("cy", d => d.Position[1]);
-    
+
+        // Pie chart visualization
+        let speciesCount = d3.rollup(treeData, v => v.length, d => d.qSpecies);
+        let dataArray = Array.from(speciesCount, ([species, count]) => ({species, count: count}));
+
+        const pieData = pie(dataArray);
+
+        g.selectAll(".arc")
+            .data(pieData)
+            .enter().append("g")
+            .attr("class", "arc")
+            .append("path")
+            .attr("d", arc)
+            .attr("fill", d => color(d.data.species));
+
+        g.selectAll(".arc")
+            .data(pieData)
+            .append("text")
+            .attr("transform", d => `translate(${arc.centroid(d)})`)
+            .attr("dy", "0.35em")
+            .text(d => d.data.species); // Display full species name without attempting to truncate
     };
 
     requestData();
-    console.log("dottree-map");
-
 </script>
 </body>
 </html>
