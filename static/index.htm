@@ -27,6 +27,7 @@
 
         var neighborhoods = topojson.feature(sf, sf.objects.SFNeighborhoods);
         var projection = d3.geoMercator().fitSize([mapWidth, mapHeight], neighborhoods);
+        var path = d3.geoPath().projection(projection);
 
         map.selectAll("path.neighborhood")
             .data(neighborhoods.features)
