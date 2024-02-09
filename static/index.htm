@@ -35,10 +35,10 @@
             .attr("class", "neighborhood")
             .attr("d", path);
 
-        const trees = await d3.csv("./static/Street_Tree_List_smaller.csv");
-            console.log(trees);
+        const treeID = await d3.csv("./static/Street_Tree_List-2022-01-30_FILTERED.csv");
+            console.log(treeID);
 
-        trees.forEach(d => {
+        treeID.forEach(d => {
             d.Position = projection([d.Longitude, d.Latitude]);
         });
 
