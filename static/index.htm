@@ -1,1 +1,36 @@
+<html>
+<head>
+    <meta charset = "UTF-8">
+    <title>Tree Distribution in SF</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/topojson.v3.min.js"></script>
+    <style>
+        .neighborhood {stroke: #000; stroke-width: 0.5; fill: none;}
+        .tree-dot{fill: forestgreen; opacity: 0.6;}
+    </style>
+</head>
+<body>
+<svg id = "sfmap" width = "960" height = "600"></svg>
 
+<script id = "dottree-map">
+    const svg = d3.select("#sfmap");
+    const width = svg.attr("width");
+    const height = svg.attr("height");
+    const margin = {top: 20, right: 20, bottom: 20, left:20};
+    const mapWidth = width - margin.left - amrgin.right;
+    const mapHeight = height - margin.top - margin.bottom;
+    const map = svg.append("g")
+                    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const requestData = async function(){
+        const sf = await d3.json(".../datasets/SF-Neighborhoods.json");
+
+    console.log("dottree-map");   
+    }
+
+    requestData();
+
+
+</script>
+</body>
+</html>
