@@ -22,14 +22,36 @@
     const map = svg.append("g")
                     .attr("transform", `translate(${margin.left},${margin.top})`);
 
-const requestData = async function(){
-    const sf = await d3.json("./static/SF-Neighborhoods.json");
+    const requestData = async function(){
+        const sf = await d3.json("./static/SF-Neighborhoods.json");
 
-   
-}
+        var neighborhoods = topojson.feature(sf, sf.objects.SFNeighborhoods);
+        var projection = d3.geoMercator().fitSize([mapWidth, mapHeight], neighborhoods);
 
-requestData();
-console.log("dottree-map");
+        map.selectAll("path.neighborhood")
+            .data(neighborhoods.features)
+            .join("path")
+            .attr("class", "neighborhood")
+            .attr("d", path);
+
+        const trees = await d3.csv("./static/Street_Tree_List_smaller.csv");
+
+        trees.forEach(d => {
+            d.Position = projection([d.Longitude, d.Latitude]);
+        });
+
+        map.selectAll("circle.tree-dot")
+            .data(trees)
+            .join("circle")
+            .attr("class", "tree-dot")
+            .attr("r", 1)
+            .attr("cx", d => d.Position[0])
+            .attr("cy", d => d.Position[1]);
+    
+    };
+
+    requestData();
+    console.log("dottree-map");
 
 </script>
 </body>
