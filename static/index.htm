@@ -35,7 +35,7 @@
             .attr("class", "neighborhood")
             .attr("d", path);
 
-        const treeID = await d3.csv("./static/Street_Tree_List-2022-01-30_FILTERED.csv");
+        const treeID = await d3.csv("./static/Street_Tree_List_smaller.csv");
             console.log(treeID);
 
         treeID.forEach(d => {
