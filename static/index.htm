@@ -17,7 +17,7 @@
     const width = svg.attr("width");
     const height = svg.attr("height");
     const margin = {top: 20, right: 20, bottom: 20, left:20};
-    const mapWidth = width - margin.left - amrgin.right;
+    const mapWidth = width - margin.left - margin.right;
     const mapHeight = height - margin.top - margin.bottom;
     const map = svg.append("g")
                     .attr("transform", `translate(${margin.left},${margin.top})`);
