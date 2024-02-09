@@ -36,6 +36,7 @@
             .attr("d", path);
 
         const trees = await d3.csv("./static/Street_Tree_List_smaller.csv");
+            console.log(trees);
 
         trees.forEach(d => {
             d.Position = projection([d.Longitude, d.Latitude]);
