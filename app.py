@@ -9,7 +9,7 @@ app.wsgi_app = WhiteNoise(app.wsgi_app,
                           autorefresh=True)
 @app.route('/', methods=['GET'])
 def index():
-    return make_response("Tree Diversity in SF")
+    return make_response(index.htm)
     
 if __name__ == "__main__":
     app.run(threaded=True, port=5000)
